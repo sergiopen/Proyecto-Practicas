@@ -162,13 +162,13 @@ function comprobarSesion() {
         return;
     }
 
-    if (!isset($_COOKIE['sesion']) && !is_front_page()) {
-        wp_redirect(home_url());
+    if (!isset($_COOKIE['sesion']) && is_front_page()) {
+        wp_redirect(get_site_url() . '/login');
         exit;
     }
 
-    if (isset($_COOKIE['sesion']) && is_front_page()) {
-		wp_redirect(get_site_url() . '/inicio');
+    if (isset($_COOKIE['sesion']) && is_page('login')) {
+		wp_redirect(home_url());
         exit;
     }
 }
@@ -202,8 +202,14 @@ function iniciarSesion() {
 
         if ($resultadoLogin->num_rows == 1) {
 			$usuarioDB = $resultadoLogin->fetch_assoc();
-			setcookie('sesion', $usuarioDB["id"], time() + 3600 * 24 * 30, '/');
-            wp_redirect(get_site_url() . '/inicio');
+			$datos = [
+				"id" => $usuarioDB["id"],
+				"nombre_usuario" => $usuarioDB["nombre_usuario"],
+			];
+
+			$jsonFormateo = json_encode($datos);
+			setcookie('sesion', $jsonFormateo, time() + 3600 * 24 * 30, '/');
+            wp_redirect(home_url());
             exit;
         } else {
             echo "<p class='error'>Usuario o contraseña incorrectos</p>";
@@ -213,3 +219,58 @@ function iniciarSesion() {
 }
 
 add_action("init", "iniciarSesion");
+
+function mostrarInformacion() {
+    if (isset($_COOKIE['sesion'])) {
+        $datos = json_decode(stripslashes($_COOKIE['sesion']), true);
+        
+        if (isset($datos['nombre_usuario'])) {
+            $usuario = $datos['nombre_usuario'];
+            
+            if (is_front_page()) {
+				echo '<main>';
+                echo '<div class="bienvenida-usuario">';
+                echo '<h2 style="text-align: center;">¡Bienvenido, ' . esc_html($usuario) . '!</h2>';
+                echo '</div>';
+				mostrar_tabla_profesores();
+				echo '</main>';
+            }
+        }
+    }
+}
+add_action('wp_footer', 'mostrarInformacion');
+
+function mostrar_tabla_profesores() {
+	$conexion = conexionBD();
+	
+    $sql = "SELECT id, nombre_usuario, nombre, apellidos, email, rol FROM profesores";
+    $resultado = $conexion->query($sql);
+	
+    if ($resultado->num_rows > 0) {
+		echo '<div class="tabla-profesores-container">';
+		echo '<h3>Lista de Profesores</h3>';
+		echo '<a href="' . home_url() . '/nuevo-profesor">Añadir profesor</a>';
+		echo '<table border="1" class="tabla-profesores">';
+        echo '<thead><tr><th>ID</th><th>Nombre de usuario</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Rol</th></tr></thead>';
+        echo '<tbody>';
+        
+        while ($row = $resultado->fetch_assoc()) {
+			echo '<tr>';
+            echo '<td>' . esc_html($row['id']) . '</td>';
+            echo '<td>' . esc_html($row['nombre_usuario']) . '</td>';
+            echo '<td>' . esc_html($row['nombre']) . '</td>';
+            echo '<td>' . esc_html($row['apellidos']) . '</td>';
+			echo '<td>' . esc_html($row['email']) . '</td>';
+			echo '<td>' . esc_html($row['rol']) . '</td>';
+            echo '</tr>';
+        }
+        
+        echo '</tbody>';
+        echo '</table>';
+		echo '</div>';
+    } else {
+		echo '<p>No se encontraron profesores.</p>';
+    }
+	
+    $conexion->close();
+}
