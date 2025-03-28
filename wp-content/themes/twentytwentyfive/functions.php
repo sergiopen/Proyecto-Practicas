@@ -274,3 +274,44 @@ function mostrar_tabla_profesores() {
 	
     $conexion->close();
 }
+
+function agregarProfesor() {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre-profesor'], $_POST['apellidos-profesor'], $_POST['email-profesor'], $_POST['usuario-profesor'], $_POST['rol-profesor'])) {
+        
+        $nombre = sanitize_text_field($_POST['nombre-profesor']);
+        $apellidos = sanitize_text_field($_POST['apellidos-profesor']);
+        $email = filter_var($_POST['email-profesor'], FILTER_SANITIZE_EMAIL);
+        $usuario = sanitize_text_field($_POST['usuario-profesor']);
+        $rol = sanitize_text_field($_POST['rol-profesor']);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo "<p class='error'>El email no es válido</p>";
+            return;
+        }
+
+        $conexion = conexionBD();
+
+        if ($conexion->connect_error) {
+            die("Error en la conexión a la base de datos");
+        }
+
+        $sql = "INSERT INTO profesores (nombre, apellidos, email, nombre_usuario, rol) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conexion->prepare($sql);
+
+        if ($stmt === false) {
+            die("Error en la consulta SQL");
+        }
+
+        $stmt->bind_param("sssss", $nombre, $apellidos, $email, $usuario, $rol);
+
+        if ($stmt->execute()) {
+            echo "<p class='success'>Profesor añadido correctamente</p>";
+        } else {
+            echo "<p class='error'>Error al añadir el profesor</p>";
+        }
+
+        $stmt->close();
+        $conexion->close();
+    }
+}
+add_action('init', 'agregarProfesor');

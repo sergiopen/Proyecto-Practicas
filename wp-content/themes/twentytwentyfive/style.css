@@ -88,6 +88,6 @@ p {
 .tabla-profesores {
   width: 85%;
   border-collapse: collapse;
-  margin: 0 auto;
+  margin: 1rem auto;
   text-align: center;
 }
