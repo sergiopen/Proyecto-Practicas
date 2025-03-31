@@ -80,14 +80,181 @@ p {
  * Estilos de la pagina principal
 */
 
-.tabla-profesores-container {
+/*
+ * Estilos de las tablas
+*/
+
+.tabla {
+  width: 90%;
+  border-collapse: collapse;
+  margin: 1rem auto;
+  text-align: center;
+}
+
+.container {
   margin: 1rem 1rem;
   text-align: center;
 }
 
-.tabla-profesores {
-  width: 85%;
-  border-collapse: collapse;
-  margin: 1rem auto;
+td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+}
+
+.btn-eliminar {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-eliminar:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}
+
+.btn-mostrar {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
   text-align: center;
+  display: inline-block;
+  transition: background-color 0.3s, transform 0.3s;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.btn-mostrar:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.btn-cerrar-sesion {
+  padding: 5px 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+  margin-left: 1rem;
+}
+
+.btn-cerrar-sesion:hover {
+  background-color: #d32f2f;
+}
+
+/**
+ * Estilos formularios añadir profesores, alumnos, empresas, etc.
+*/
+
+.form-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.exito {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 20px;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 20px;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.form-title {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.form-label {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.cursos-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-checkbox {
+  margin-right: 5px;
+  width: auto;
+}
+
+textarea {
+  resize: none;
+}
+
+.form-checkbox-label {
+  display: inline-block;
+  margin: 0;
+  font-weight: normal;
+  color: #333;
+}
+
+.form-input[name="OTROS"] {
+  margin-top: 10px;
+}
+
+.form-field.otros-field {
+  margin-top: 30px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.form-button:hover {
+  background-color: #45a049;
 }
