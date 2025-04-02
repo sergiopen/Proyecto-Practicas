@@ -104,8 +104,9 @@ td {
 .btn-eliminar {
   background-color: #f44336;
   color: white;
-  padding: 8px 15px;
-  font-size: 14px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -118,7 +119,7 @@ td {
 }
 
 .btn-mostrar {
-  background-color: #007bff;
+  background-color: #0073e6;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -130,6 +131,7 @@ td {
   transition: background-color 0.3s, transform 0.3s;
   text-decoration: none;
   font-weight: bold;
+  margin: 1rem;
 }
 
 .btn-mostrar:hover {
@@ -257,4 +259,78 @@ textarea {
 
 .form-button:hover {
   background-color: #45a049;
+}
+
+/*
+ * Estilos formulario filtro de tablas
+*/
+
+.container-filtros {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-filtro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.form-filtro label {
+  font-weight: bold;
+}
+
+.form-filtro input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+}
+
+.btn-filtrar {
+  padding: 12px 24px;
+  background-color: #0073e6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.btn-filtrar:hover {
+  background-color: #005bb5;
+}
+
+/***
+ * Estilos para el botón de editar de la tabla
+*/
+
+.editar-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.editar-btn:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
 }
