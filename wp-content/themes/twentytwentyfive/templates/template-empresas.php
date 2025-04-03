@@ -12,7 +12,7 @@ $conexion = conexionBD();
 
 $nombre_filtro = isset($_GET['nombre']) ? $_GET['nombre'] : '';
 $email_filtro = isset($_GET['email']) ? $_GET['email'] : '';
-$codigo_empresa_filtro = isset($_GET['codigo_empresa']) ? $_GET['codigo_empresa'] : ''; // Filtro para código de empresa
+$codigo_empresa_filtro = isset($_GET['codigo_empresa']) ? $_GET['codigo_empresa'] : '';
 $cursos = ['ASIR', 'DAW', 'DAM', 'SMR', 'VIDEOJUEGOS'];
 $curso_filtro = [];
 $params = [];

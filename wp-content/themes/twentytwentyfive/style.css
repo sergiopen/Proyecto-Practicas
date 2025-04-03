@@ -94,6 +94,10 @@ p {
 .container {
   margin: 1rem 1rem;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 td {

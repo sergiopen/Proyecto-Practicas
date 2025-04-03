@@ -158,36 +158,41 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 endif;
 
 
-function agregar_ruta_profesores() {
+function agregarRutaProfesores() {
     add_rewrite_rule('^profesores/?$', 'index.php?profesores=1', 'top');
 }
-add_action('init', 'agregar_ruta_profesores');
+add_action('init', 'agregarRutaProfesores');
 
-function agregar_ruta_alumnos() {
+function agregarRutaAlumnos() {
     add_rewrite_rule('^alumnos/?$', 'index.php?alumnos=1', 'top');
 }
-add_action('init', 'agregar_ruta_alumnos');
+add_action('init', 'agregarRutaAlumnos');
 
-function agregar_ruta_empresas() {
+function agregarRutaEmpresas() {
     add_rewrite_rule('^empresas/?$', 'index.php?empresas=1', 'top');
 }
-add_action('init', 'agregar_ruta_empresas');
+add_action('init', 'agregarRutaEmpresas');
 
-function agregar_ruta_ofertas() {
+function agregarRutaOferta() {
     add_rewrite_rule('^ofertas/?$', 'index.php?ofertas=1', 'top');
 }
-add_action('init', 'agregar_ruta_ofertas');
+add_action('init', 'agregarRutaOferta');
+function agregarRutaEditarProfesor() {
+    add_rewrite_rule('^editar-profesor/?$', 'index.php?editar-profesor=1', 'top');
+}
+add_action('init', 'agregarRutaEditarProfesor');
 
 function agregar_query_vars($vars) {
     $vars[] = 'profesores';
     $vars[] = 'alumnos';
     $vars[] = 'empresas';
     $vars[] = 'ofertas';
+    $vars[] = 'editar-profesor';
     return $vars;
 }
 add_filter('query_vars', 'agregar_query_vars');
 
-function cargar_template_personalizado($template) {
+function cargarTemplates($template) {
     if (get_query_var('profesores') == 1) {
         return get_template_directory() . '/templates/template-profesores.php';
     }
@@ -200,23 +205,37 @@ function cargar_template_personalizado($template) {
     if (get_query_var('ofertas') == 1) {
         return get_template_directory() . '/templates/template-ofertas.php';
     }
+    if (get_query_var('editar-profesor') == 1) {
+        return get_template_directory() . '/templates/template-editar-profesor.php';
+    }
     return $template;
 }
-add_filter('template_include', 'cargar_template_personalizado');
+add_filter('template_include', 'cargarTemplates');
 
 require_once get_template_directory() . '/includes/db-connection.php';
 function comprobarSesion() {
-	if (is_admin()) {
+    if (is_admin() || wp_doing_ajax()) {
         return;
     }
 
-    if (!isset($_COOKIE['sesion']) && is_front_page()) {
-        wp_redirect(get_site_url() . '/login');
+    $sesion_activa = isset($_COOKIE['sesion']) && !empty($_COOKIE['sesion']);
+    $pagina_login = is_page('login');
+    $pagina_actual = get_post_field('post_name', get_queried_object_id());
+
+    $paginas_publicas = array('login');
+
+    if (!$sesion_activa && (is_front_page() || is_home())) {
+        wp_safe_redirect(get_site_url() . '/login');
         exit;
     }
 
-    if (isset($_COOKIE['sesion']) && is_page('login')) {
-		wp_redirect(home_url());
+    if (!$sesion_activa && !$pagina_login && !in_array($pagina_actual, $paginas_publicas)) {
+        wp_safe_redirect(get_site_url() . '/login');
+        exit;
+    }
+
+    if ($sesion_activa && $pagina_login) {
+        wp_safe_redirect(home_url());
         exit;
     }
 }
