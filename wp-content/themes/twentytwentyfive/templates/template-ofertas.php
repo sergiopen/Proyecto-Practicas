@@ -19,8 +19,7 @@ $types = "";
 
 $cursos = ['ASIR', 'DAW', 'DAM', 'SMR', 'VIDEOJUEGOS'];
 
-$sql = "SELECT id, codigo_empresa, titulo, descripcion, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS FROM ofertas WHERE 1=1";
-
+$sql = "SELECT id, codigo_empresa, titulo, descripcion, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS, fecha_caducidad FROM ofertas WHERE 1=1";
 if (!empty($nombre_filtro)) {
     $sql .= " AND titulo LIKE ?";
     $params[] = "%$nombre_filtro%";

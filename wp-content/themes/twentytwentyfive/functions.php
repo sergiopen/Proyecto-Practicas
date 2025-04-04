@@ -181,16 +181,31 @@ function agregarRutaEditarProfesor() {
     add_rewrite_rule('^editar-profesor/?$', 'index.php?editar-profesor=1', 'top');
 }
 add_action('init', 'agregarRutaEditarProfesor');
+function agregarRutaEditarAlumno() {
+    add_rewrite_rule('^editar-alumno/?$', 'index.php?editar-alumno=1', 'top');
+}
+add_action('init', 'agregarRutaEditarAlumno');
+function agregarRutaEditarEmpresa() {
+    add_rewrite_rule('^editar-empresa/?$', 'index.php?editar-empresa=1', 'top');
+}
+add_action('init', 'agregarRutaEditarEmpresa');
+function agregarRutaEditarOferta() {
+    add_rewrite_rule('^editar-oferta/?$', 'index.php?editar-oferta=1', 'top');
+}
+add_action('init', 'agregarRutaEditarOferta');
 
-function agregar_query_vars($vars) {
+function agregarQueryVars($vars) {
     $vars[] = 'profesores';
     $vars[] = 'alumnos';
     $vars[] = 'empresas';
     $vars[] = 'ofertas';
     $vars[] = 'editar-profesor';
+    $vars[] = 'editar-alumno';
+    $vars[] = 'editar-empresa';
+    $vars[] = 'editar-oferta';
     return $vars;
 }
-add_filter('query_vars', 'agregar_query_vars');
+add_filter('query_vars', 'agregarQueryVars');
 
 function cargarTemplates($template) {
     if (get_query_var('profesores') == 1) {
@@ -207,6 +222,15 @@ function cargarTemplates($template) {
     }
     if (get_query_var('editar-profesor') == 1) {
         return get_template_directory() . '/templates/template-editar-profesor.php';
+    }
+    if (get_query_var('editar-alumno') == 1) {
+        return get_template_directory() . '/templates/template-editar-alumno.php';
+    }
+    if( get_query_var('editar-empresa') == 1) {
+        return get_template_directory() . '/templates/template-editar-empresa.php';
+    }
+    if( get_query_var('editar-oferta') == 1) {
+        return get_template_directory() . '/templates/template-editar-oferta.php';
     }
     return $template;
 }
@@ -647,16 +671,45 @@ function agregarEmpresa() {
 add_action('init', 'agregarEmpresa');
 
 function eliminarEmpresa() {
-	$conexion = conexionBD();
+    $conexion = conexionBD();
+
     if (isset($_POST['id_empresa'])) {
         $id_empresa = intval($_POST['id_empresa']);
-        
-        $sql = "DELETE FROM empresas WHERE id = $id_empresa";
-        
-        if ($conexion->query($sql) === true) {
-            echo "<p class='exito'>Empresa eliminada correctamente.</p>";
+
+        $sql = "SELECT codigo_empresa FROM empresas WHERE id = ?";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("i", $id_empresa);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $empresa = $resultado->fetch_assoc();
+        $stmt->close();
+
+        if ($empresa) {
+            $codigo_empresa = $empresa['codigo_empresa'];
+
+            $sqlEliminarOfertas = "DELETE FROM ofertas WHERE codigo_empresa = ?";
+            $stmtEliminarOfertas = $conexion->prepare($sqlEliminarOfertas);
+            $stmtEliminarOfertas->bind_param("s", $codigo_empresa);
+
+            if ($stmtEliminarOfertas->execute()) {
+                $sqlEliminarEmpresa = "DELETE FROM empresas WHERE id = ?";
+                $stmtEliminarEmpresa = $conexion->prepare($sqlEliminarEmpresa);
+                $stmtEliminarEmpresa->bind_param("i", $id_empresa);
+
+                if ($stmtEliminarEmpresa->execute()) {
+                    echo "<p class='exito'>Empresa y ofertas relacionadas eliminadas correctamente.</p>";
+                } else {
+                    echo "<p class='error'>Error al eliminar la empresa: " . $conexion->error . "</p>";
+                }
+
+                $stmtEliminarEmpresa->close();
+            } else {
+                echo "<p class='error'>Error al eliminar las ofertas: " . $conexion->error . "</p>";
+            }
+
+            $stmtEliminarOfertas->close();
         } else {
-            echo "<p class='error'>Error al eliminar la empresa: " . $conexion->error . "</p>";
+            echo "<p class='error'>Empresa no encontrada.</p>";
         }
     }
 }
@@ -665,14 +718,14 @@ add_action('init', 'eliminarEmpresa');
 function mostrarTablaOfertas() {
     $conexion = conexionBD();
     
-    $sql = "SELECT id, codigo_empresa, titulo, descripcion, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS FROM ofertas LIMIT 5";
+    $sql = "SELECT id, codigo_empresa, titulo, descripcion, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS, fecha_caducidad FROM ofertas LIMIT 5";
     $resultado = $conexion->query($sql);
     
     if ($resultado->num_rows > 0) {
         echo '<div class="container">';
         echo '<h3>Lista de Ofertas</h3>';
         echo '<table border="1" class="tabla tabla-ofertas">';
-    echo '<thead><tr><th>ID</th><th>Código Empresa</th><th>Título</th><th>Descripción</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Editar</th><th>Eliminar</th></tr></thead>';
+    echo '<thead><tr><th>ID</th><th>Código Empresa</th><th>Título</th><th>Descripción</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Fecha caducidad</th><th>Editar</th><th>Eliminar</th></tr></thead>';
     echo '<tbody>';
 
     while ($row = $resultado->fetch_assoc()) {
@@ -687,6 +740,7 @@ function mostrarTablaOfertas() {
         echo '<td>' . ($row['SMR'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . ($row['VIDEOJUEGOS'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . (!empty($row['OTROS']) ? esc_html($row['OTROS']) : 'No') . '</td>';
+        echo '<td>' . (!empty($row['fecha_caducidad']) ? esc_html($row['fecha_caducidad']) : 'Nunca') . '</td>';
         echo '<td><a class="editar-btn" href="' . home_url() . '/editar-oferta?id=' . esc_html($row['id']) . '" class="btn-editar">Editar</a></td>';
         echo '<td>
                 <form method="POST">
@@ -716,7 +770,8 @@ function agregarOferta() {
         $codigo_empresa = sanitize_text_field($_POST['codigo_empresa']);
         $titulo_oferta = sanitize_text_field($_POST['titulo']);
         $descripcion_oferta = sanitize_textarea_field($_POST['descripcion']);
-        
+        $caducidad = isset($_POST['caducidad']) ? $_POST['caducidad'] : null;
+
         $asir = isset($_POST['ASIR']) ? true : false;
         $daw = isset($_POST['DAW']) ? true : false;
         $dam = isset($_POST['DAM']) ? true : false;
@@ -729,13 +784,15 @@ function agregarOferta() {
             return;
         }
 
+        if(empty($caducidad)) $caducidad = null;
+
         $conexion = conexionBD();
 
         if ($conexion->connect_error) {
             die("Error en la conexión a la base de datos");
         }
 
-        $sql = "INSERT INTO ofertas (codigo_empresa, titulo, descripcion, asir, daw, dam, smr, videojuegos, otros) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO ofertas (codigo_empresa, titulo, descripcion, asir, daw, dam, smr, videojuegos, otros, fecha_caducidad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conexion->prepare($sql);
 
@@ -743,7 +800,7 @@ function agregarOferta() {
             die("Error en la consulta SQL: " . $conexion->error);
         }
 
-        $stmt->bind_param("sssssssss", $codigo_empresa, $titulo_oferta, $descripcion_oferta, $asir, $daw, $dam, $smr, $videojuegos, $otros);
+        $stmt->bind_param("ssssssssss", $codigo_empresa, $titulo_oferta, $descripcion_oferta, $asir, $daw, $dam, $smr, $videojuegos, $otros, $caducidad);
 
         if ($stmt->execute()) {
             echo "<p class='exito'>Oferta añadida correctamente</p>";
