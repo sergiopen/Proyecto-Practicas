@@ -157,6 +157,9 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 	}
 endif;
 
+require_once( WP_PLUGIN_DIR . '/phpmailer/src/PHPMailer.php' );
+require_once( WP_PLUGIN_DIR . '/phpmailer/src/SMTP.php' );
+require_once( WP_PLUGIN_DIR . '/phpmailer/src/Exception.php' );
 
 function agregarRutaProfesores() {
     add_rewrite_rule('^profesores/?$', 'index.php?profesores=1', 'top');

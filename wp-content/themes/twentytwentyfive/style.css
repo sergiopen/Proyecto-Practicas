@@ -138,6 +138,25 @@ td {
   margin: 1rem;
 }
 
+.btn-enviar-correo {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  transition: background-color 0.3s, transform 0.3s;
+  text-decoration: none;
+}
+.btn-enviar-correo:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
 .btn-mostrar:hover {
   background-color: #0056b3;
   transform: translateY(-2px);

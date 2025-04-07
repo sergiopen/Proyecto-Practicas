@@ -116,7 +116,7 @@
             </div>
 
             <div class="form-field">
-                <label>Cursos:</label>
+                <h2>Cursos:</h2>
                     <label><input type="checkbox" name="asir" <?php echo ($asirAntiguo) ? 'checked' : ''; ?> /> ASIR</label>
                     <label><input type="checkbox" name="daw" <?php echo ($dawAntiguo) ? 'checked' : ''; ?> /> DAW</label>
                     <label><input type="checkbox" name="dam" <?php echo ($damAntiguo) ? 'checked' : ''; ?> /> DAM</label>
@@ -125,13 +125,12 @@
             </div>
 
             <div class="form-field">
+                <label class="form-label" for="otros">Otros</label>
+                <input class="form-input" type="text" name="otros-editar" id="otros" placeholder="Otro curso que no está en los anteriores" value="<?php echo esc_attr($otrosAntiguo);?>" />
+            </div>
+            <div class="form-field">
                 <label class="form-label" for="fecha_caducidad">Fecha de Caducidad</label>
                 <input class="form-input" type="date" name="fecha_caducidd-editar" id="fecha_caducidad" value="<?php echo esc_attr($fechaCaducidadAntigua);?>" />
-            </div>
-
-            <div class="form-field">
-                <label class="form-label" for="otros">Otros</label>
-                <input class="form-input" type="text" name="otros-editar" id="otros" value="<?php echo esc_attr($otrosAntiguo);?>" />
             </div>
             <span><b style='color: red;'>*</b> Campo obligatorio</span>
             <div class="form-field">
