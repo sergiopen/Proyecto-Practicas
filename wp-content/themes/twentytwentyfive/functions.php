@@ -320,74 +320,6 @@ function cerrarSesion() {
 }
 add_action("init", "cerrarSesion");
 
-function mostrarInformacionInicio() {
-    if (isset($_COOKIE['sesion'])) {
-        $datos = json_decode(stripslashes($_COOKIE['sesion']), true);
-        
-        if (isset($datos['nombre_usuario'])) {
-            $usuario = $datos['nombre_usuario'];
-            
-            if (is_front_page()) {
-				echo '<main class="main">';
-                echo '<div class="bienvenida-usuario">';
-                echo '<h2 style="text-align: center;">¡Bienvenido, ' . esc_html($usuario) . '!</h2>';
-                echo '</div>';
-				mostrarTablaProfesores();
-				mostrarTablaAlumnos();
-				mostrarTablaEmpresas();
-				mostrarTablaOfertas();
-				echo '</main>';
-            }
-        }
-    }
-}
-add_action('wp_footer', 'mostrarInformacionInicio');
-
-function mostrarTablaProfesores() {
-	$conexion = conexionBD();
-	
-    $sql = "SELECT id, nombre_usuario, nombre, apellidos, email, rol FROM profesores LIMIT 5";
-    $resultado = $conexion->query($sql);
-	
-    if ($resultado->num_rows > 0) {
-		echo '<div class="container">';
-		echo '<h3>Lista de Profesores</h3>';
-		echo '<table border="1" class="tabla tabla-profesores">';
-    echo '<thead><tr><th>ID</th><th>Nombre de usuario</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Rol</th><th>Editar</th><th>Eliminar</th></tr></thead>';
-    echo '<tbody>';
-    
-    while ($row = $resultado->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . esc_html($row['id']) . '</td>';
-        echo '<td>' . esc_html($row['nombre_usuario']) . '</td>';
-        echo '<td>' . esc_html($row['nombre']) . '</td>';
-        echo '<td>' . esc_html($row['apellidos']) . '</td>';
-        echo '<td>' . esc_html($row['email']) . '</td>';
-        echo '<td>' . esc_html($row['rol']) . '</td>';
-        echo '<td><a class="editar-btn" href="' . home_url() . '/editar-profesor?id=' . esc_html($row['id']) . '" class="btn-editar">Editar</a></td>';
-        echo '<td>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="id_profesor" value="' . esc_html($row['id']) . '">
-                    <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar este profesor?\')">Eliminar</button>
-                </form>
-              </td>';
-        echo '</tr>';
-    }
-    
-        echo '</tbody>';
-        echo '</table>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/profesores">Todos los profesores</a>';
-		echo '</div>';
-    } else {
-		echo '<div class="container">';
-        echo '<p>No se encontraron profesores.</p>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/nuevo-profesor">Añadir profesor</a>';
-		echo '</div>';
-    }
-	
-    $conexion->close();
-}
-
 function agregarProfesor() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre-profesor'], $_POST['apellidos-profesor'], $_POST['email-profesor'], $_POST['usuario-profesor'], $_POST['rol-profesor'], $_POST['password-profesor'])) {
 
@@ -444,7 +376,7 @@ function agregarProfesor() {
 add_action('init', 'agregarProfesor');
 
 function eliminarProfesor() {
-	$conexion = conexionBD();
+    $conexion = conexionBD();
     if (isset($_POST['id_profesor'])) {
         $id_profesor = intval($_POST['id_profesor']);
         
@@ -458,55 +390,6 @@ function eliminarProfesor() {
     }
 }
 add_action('init', 'eliminarProfesor');
-
-function mostrarTablaAlumnos() {
-    $conexion = conexionBD();
-    
-    $sql = "SELECT id, nombre, apellidos, email, telefono, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS FROM alumnos LIMIT 5";
-    $resultado = $conexion->query($sql);
-    
-    if ($resultado->num_rows > 0) {
-        echo '<div class="container">';
-        echo '<h3>Lista de Alumnos</h3>';
-        echo '<table border="1" class="tabla tabla-alumnos">';
-    echo '<thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Teléfono</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Editar</th><th>Eliminar</th></tr></thead>';
-    echo '<tbody>';
-    while ($row = $resultado->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . esc_html($row['id']) . '</td>';
-        echo '<td>' . esc_html($row['nombre']) . '</td>';
-        echo '<td>' . esc_html($row['apellidos']) . '</td>';
-        echo '<td>' . esc_html($row['email']) . '</td>';
-        echo '<td>' . esc_html($row['telefono']) . '</td>';
-        echo '<td>' . ($row['ASIR'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['DAW'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['DAM'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['SMR'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['VIDEOJUEGOS'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . (!empty($row['OTROS']) ? esc_html($row['OTROS']) : 'No') . '</td>';
-        
-        echo '<td><a class="editar-btn" href="' . home_url() . '/editar-alumno?id=' . esc_html($row['id']) . '">Editar</a></td>';
-        echo '<td>
-                <form method="POST">
-                    <input type="hidden" name="id_alumno" value="' . esc_html($row['id']) . '">
-                    <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar este alumno?\')">Eliminar</button>
-                </form>
-              </td>';
-        echo '</tr>';
-    }
-        echo '</tbody>';
-        echo '</table>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/alumnos">Todos los alumnos</a>';
-        echo '</div>';
-    } else {
-        echo '<div class="container">';
-        echo '<p>No se encontraron alumnos.</p>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/nuevo-alumno">Añadir alumno</a>';
-		echo '</div>';
-    }
-    
-    $conexion->close();
-}
 
 function agregarAlumno() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre'], $_POST['apellidos'], $_POST['email'], $_POST['telefono'])) {
@@ -562,9 +445,8 @@ function agregarAlumno() {
 }
 add_action('init', 'agregarAlumno');
 
-
 function eliminarAlumno() {
-	$conexion = conexionBD();
+    $conexion = conexionBD();
     if (isset($_POST['id_alumno'])) {
         $id_alumno = intval($_POST['id_alumno']);
         
@@ -578,52 +460,6 @@ function eliminarAlumno() {
     }
 }
 add_action('init', 'eliminarAlumno');
-
-function mostrarTablaEmpresas() {
-    $conexion = conexionBD();
-    
-    $sql = "SELECT id, nombre, direccion, telefono, email, telefono_contacto, codigo_empresa FROM empresas LIMIT 5";
-    $resultado = $conexion->query($sql);
-    
-    if ($resultado->num_rows > 0) {
-        echo '<div class="container">';
-        echo '<h3>Lista de Empresas</h3>';
-        echo '<table border="1" class="tabla tabla-empresas">';
-    echo '<thead><tr><th>ID</th><th>Código Empresa</th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Email</th><th>Teléfono de Contacto</th><th>Editar</th><th>Eliminar</th></tr></thead>';
-    echo '<tbody>';
-    
-    while ($row = $resultado->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . esc_html($row['id']) . '</td>';
-        echo '<td>' . esc_html($row['codigo_empresa']) . '</td>';
-        echo '<td>' . esc_html($row['nombre']) . '</td>';
-        echo '<td>' . esc_html($row['direccion']) . '</td>';
-        echo '<td>' . esc_html($row['telefono']) . '</td>';
-        echo '<td>' . esc_html($row['email']) . '</td>';
-        echo '<td>' . esc_html($row['telefono_contacto']) . '</td>';
-        echo '<td><a class="editar-btn" href="' . home_url() . '/editar-empresa?id=' . esc_html($row['id']) . '" class="btn-editar">Editar</a></td>';
-        echo '<td>
-                <form method="POST">
-                    <input type="hidden" name="id_empresa" value="' . esc_html($row['id']) . '">
-                    <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar esta empresa?\')">Eliminar</button>
-                </form>
-              </td>';
-        echo '</tr>';
-    }
-
-        echo '</tbody>';
-        echo '</table>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/empresas">Todas las empresas</a>';
-        echo '</div>';
-    } else {
-		echo '<div class="container">';
-        echo '<p>No se encontraron empresas.</p>';
-		echo '<a class="btn-mostrar" href="' . home_url() . '/nueva-empresa">Añadir empresa</a>';
-		echo '</div>';
-    }
-    
-    $conexion->close();
-}
 
 function agregarEmpresa() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre-empresa'], $_POST['direccion-empresa'], $_POST['telefono-empresa'], $_POST['email-empresa'], $_POST['telefono-contacto'], $_POST['codigo-empresa'])) {
@@ -718,56 +554,6 @@ function eliminarEmpresa() {
 }
 add_action('init', 'eliminarEmpresa');
 
-function mostrarTablaOfertas() {
-    $conexion = conexionBD();
-    
-    $sql = "SELECT id, codigo_empresa, titulo, descripcion, ASIR, DAW, DAM, SMR, VIDEOJUEGOS, OTROS, fecha_caducidad FROM ofertas LIMIT 5";
-    $resultado = $conexion->query($sql);
-    
-    if ($resultado->num_rows > 0) {
-        echo '<div class="container">';
-        echo '<h3>Lista de Ofertas</h3>';
-        echo '<table border="1" class="tabla tabla-ofertas">';
-    echo '<thead><tr><th>ID</th><th>Código Empresa</th><th>Título</th><th>Descripción</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Fecha caducidad</th><th>Editar</th><th>Eliminar</th></tr></thead>';
-    echo '<tbody>';
-
-    while ($row = $resultado->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . esc_html($row['id']) . '</td>';
-        echo '<td>' . esc_html($row['codigo_empresa']) . '</td>';
-        echo '<td>' . esc_html($row['titulo']) . '</td>';
-        echo '<td>' . esc_html($row['descripcion']) . '</td>';
-        echo '<td>' . ($row['ASIR'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['DAW'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['DAM'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['SMR'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . ($row['VIDEOJUEGOS'] ? 'Sí' : 'No') . '</td>';
-        echo '<td>' . (!empty($row['OTROS']) ? esc_html($row['OTROS']) : 'No') . '</td>';
-        echo '<td>' . (!empty($row['fecha_caducidad']) ? esc_html($row['fecha_caducidad']) : 'Nunca') . '</td>';
-        echo '<td><a class="editar-btn" href="' . home_url() . '/editar-oferta?id=' . esc_html($row['id']) . '" class="btn-editar">Editar</a></td>';
-        echo '<td>
-                <form method="POST">
-                    <input type="hidden" name="id_oferta" value="' . esc_html($row['id']) . '">
-                    <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar esta oferta?\')">Eliminar</button>
-                </form>
-              </td>';
-        echo '</tr>';
-    }
-
-        echo '</tbody>';
-        echo '</table>';
-        echo '<a class="btn-mostrar" href="' . home_url() . '/ofertas">Todas las ofertas</a>';
-        echo '</div>';
-    } else {
-        echo '<div class="container">';
-        echo '<p>No se encontraron ofertas.</p>';
-        echo '<a class="btn-mostrar" href="' . home_url() . '/nueva-oferta">Añadir oferta</a>';
-        echo '</div>';
-    }
-    
-    $conexion->close();
-}
-
 function agregarOferta() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['codigo_empresa'], $_POST['titulo'], $_POST['descripcion'])) {
         $codigo_empresa = sanitize_text_field($_POST['codigo_empresa']);
@@ -818,7 +604,7 @@ function agregarOferta() {
 add_action('init', 'agregarOferta');
 
 function eliminarOferta() {
-	$conexion = conexionBD();
+    $conexion = conexionBD();
     if (isset($_POST['id_oferta'])) {
         $id_oferta = intval($_POST['id_oferta']);
         
