@@ -130,11 +130,12 @@
             </div>
             <div class="form-field">
                 <label class="form-label" for="fecha_caducidad">Fecha de Caducidad</label>
-                <input class="form-input" type="date" name="fecha_caducidd-editar" id="fecha_caducidad" value="<?php echo esc_attr($fechaCaducidadAntigua);?>" />
+                <input class="form-input" type="date" name="fecha_caducidad-editar" id="fecha_caducidad" value="<?php echo esc_attr($fechaCaducidadAntigua);?>" />
             </div>
             <span><b style='color: red;'>*</b> Campo obligatorio</span>
             <div class="form-field">
-                <button type="submit" class="form-button">Guardar cambios</button>
+                <button type="submit" class="form-button">Editar oferta</button>
+                <?php echo '<a class="form-button-cancel" href="' . home_url() . '/ofertas">Volver</a>'; ?>
             </div>
         </form>
     </div>

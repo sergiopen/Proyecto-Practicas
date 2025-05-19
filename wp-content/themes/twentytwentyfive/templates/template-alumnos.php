@@ -8,14 +8,27 @@
 <body>
 <?php
 get_header();
-require_once get_template_directory() . '/includes/db-connection.php';
 
 $conexion = conexionBD();
 
-$nombre_filtro = isset($_GET['nombre']) ? $_GET['nombre'] : '';
-$email_filtro = isset($_GET['email']) ? $_GET['email'] : '';
-$telefono_filtro = isset($_GET['telefono']) ? $_GET['telefono'] : '';
-$otros_filtro = isset($_GET['otros']) ? $_GET['otros'] : '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_multiple']) && isset($_POST['alumnos_seleccionados'])) {
+    $ids = $_POST['alumnos_seleccionados'];
+    if (!empty($ids)) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+        $stmt_delete = $conexion->prepare("DELETE FROM alumnos WHERE id IN ($placeholders)");
+        $stmt_delete->bind_param($types, ...$ids);
+        $stmt_delete->execute();
+        $stmt_delete->close();
+        echo "<script>window.location.href=window.location.href;</script>";
+        exit;
+    }
+}
+
+$nombre_filtro = $_GET['nombre'] ?? '';
+$email_filtro = $_GET['email'] ?? '';
+$telefono_filtro = $_GET['telefono'] ?? '';
+$otros_filtro = $_GET['otros'] ?? '';
 $cursos = ['ASIR', 'DAW', 'DAM', 'SMR', 'VIDEOJUEGOS'];
 $curso_filtro = [];
 $params = [];
@@ -38,7 +51,6 @@ if (!empty($telefono_filtro)) {
     $params[] = "%$telefono_filtro%";
     $types .= "s";
 }
-
 if (!empty($otros_filtro)) {
     $sql .= " AND OTROS LIKE ?";
     $params[] = "%$otros_filtro%";
@@ -78,7 +90,6 @@ foreach ($cursos as $curso) {
 }
 echo '<label for="otros">OTROS:</label>';
 echo '<input type="text" name="otros" id="otros" value="' . esc_attr($_GET['otros'] ?? '') . '">';
-
 echo '</fieldset>';
 
 echo '<div class="container-filtros">';
@@ -86,14 +97,17 @@ echo '<button type="submit" class="btn-filtrar">Filtrar</button>';
 echo '<button type="reset" class="btn-filtrar" onclick="window.location.href=window.location.pathname;">Limpiar filtros</button>';
 echo '</div>';
 echo '</form>';
-echo '<a class="btn-mostrar" href="' . home_url() . '/nuevo-alumno">Añadir alumno</a>';
+
+echo '<a class="btn-mostrar" href="' . home_url() . '/crear-alumno">Añadir alumno</a>';
 
 if ($resultado->num_rows > 0) {
+    echo '<form method="POST">';
     echo '<table border="1" class="tabla tabla-alumnos">';
-    echo '<thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Teléfono</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Editar</th><th>Eliminar</th></tr></thead>';
+    echo '<thead><tr><th><input type="checkbox" id="select-all"></th><th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Teléfono</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Editar</th><th>Eliminar</th></tr></thead>';
     echo '<tbody>';
     while ($row = $resultado->fetch_assoc()) {
         echo '<tr>';
+        echo '<td><input type="checkbox" name="alumnos_seleccionados[]" value="' . esc_attr($row['id']) . '"></td>';
         echo '<td>' . esc_html($row['id']) . '</td>';
         echo '<td>' . esc_html($row['nombre']) . '</td>';
         echo '<td>' . esc_html($row['apellidos']) . '</td>';
@@ -105,26 +119,35 @@ if ($resultado->num_rows > 0) {
         echo '<td>' . ($row['SMR'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . ($row['VIDEOJUEGOS'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . (!empty($row['OTROS']) ? esc_html($row['OTROS']) : 'No') . '</td>';
-        
         echo '<td><a class="editar-btn" href="' . home_url() . '/editar-alumno?id=' . esc_html($row['id']) . '">Editar</a></td>';
         echo '<td>
-                <form method="POST">
-                    <input type="hidden" name="id_alumno" value="' . esc_html($row['id']) . '">
-                    <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar este alumno?\')">Eliminar</button>
+                <form method="POST" onsubmit="return confirm(\'¿Estás seguro de que quieres eliminar este alumno?\')">
+                    <input type="hidden" name="accion_multiple" value="1">
+                    <input type="hidden" name="alumnos_seleccionados[]" value="' . esc_attr($row['id']) . '">
+                    <button class="btn-eliminar" type="submit">Eliminar</button>
                 </form>
               </td>';
         echo '</tr>';
     }
+    echo '</tbody></table>';
+    echo '<button class="btn-filtrar" type="submit" name="accion_multiple" value="1" onclick="return confirm(\'¿Estás seguro de que quieres eliminar los alumnos seleccionados?\')">Eliminar seleccionados</button>';
+    echo '</form>';
 } else {
     echo '<h2>No se encontraron alumnos.</h2>';
 }
 
-echo '</tbody>';
-echo '</table>';
 echo '</div>';
 
 $stmt->close();
 $conexion->close();
 ?>
+
+<script>
+document.getElementById('select-all')?.addEventListener('change', function () {
+    const checkboxes = document.querySelectorAll('input[name="alumnos_seleccionados[]"]');
+    checkboxes.forEach(chk => chk.checked = this.checked);
+});
+</script>
+
 </body>
 </html>

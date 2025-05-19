@@ -196,6 +196,26 @@ function agregarRutaEditarOferta() {
     add_rewrite_rule('^editar-oferta/?$', 'index.php?editar-oferta=1', 'top');
 }
 add_action('init', 'agregarRutaEditarOferta');
+function agregarRutaCrearOferta() {
+    add_rewrite_rule('^crear-oferta/?$', 'index.php?crear-oferta=1', 'top');
+}
+add_action('init', 'agregarRutaCrearOferta');
+function agregarRutaCrearProfesor() {
+    add_rewrite_rule('^crear-profesor/?$', 'index.php?crear-profesor=1', 'top');
+}
+add_action('init', 'agregarRutaCrearProfesor');
+function agregarRutaCrearAlumno() {
+    add_rewrite_rule('^crear-alumno/?$', 'index.php?crear-alumno=1', 'top');
+}
+add_action('init', 'agregarRutaCrearAlumno');
+function agregarRutaCrearEmpresa() {
+    add_rewrite_rule('^crear-empresa/?$', 'index.php?crear-empresa=1', 'top');
+}
+add_action('init', 'agregarRutaCrearEmpresa');
+function agregarRutaLogin() {
+    add_rewrite_rule('^iniciar/?$', 'index.php?iniciar=1', 'top');
+}
+add_action('init', 'agregarRutaLogin');
 
 function agregarQueryVars($vars) {
     $vars[] = 'profesores';
@@ -206,6 +226,11 @@ function agregarQueryVars($vars) {
     $vars[] = 'editar-alumno';
     $vars[] = 'editar-empresa';
     $vars[] = 'editar-oferta';
+    $vars[] = 'crear-profesor';
+    $vars[] = 'crear-oferta';
+    $vars[] = 'crear-alumno';
+    $vars[] = 'crear-empresa';
+    $vars[] = 'iniciar';
     return $vars;
 }
 add_filter('query_vars', 'agregarQueryVars');
@@ -235,6 +260,21 @@ function cargarTemplates($template) {
     if( get_query_var('editar-oferta') == 1) {
         return get_template_directory() . '/templates/template-editar-oferta.php';
     }
+    if( get_query_var('crear-oferta') == 1) {
+        return get_template_directory() . '/templates/template-nueva-oferta.php';
+    }
+    if( get_query_var('crear-profesor') == 1) {
+        return get_template_directory() . '/templates/template-nuevo-profesor.php';
+    }
+    if( get_query_var('crear-alumno') == 1) {
+        return get_template_directory() . '/templates/template-nuevo-alumno.php';
+    }
+    if( get_query_var('crear-empresa') == 1) {
+        return get_template_directory() . '/templates/template-nueva-empresa.php';
+    }
+    if( get_query_var('iniciar') == 1) {
+        return get_template_directory() . '/templates/template-login.php';
+    }
     return $template;
 }
 add_filter('template_include', 'cargarTemplates');
@@ -246,28 +286,23 @@ function comprobarSesion() {
     }
 
     $sesion_activa = isset($_COOKIE['sesion']) && !empty($_COOKIE['sesion']);
-    $pagina_login = is_page('login');
     $pagina_actual = get_post_field('post_name', get_queried_object_id());
 
     $paginas_publicas = array('login');
 
-    if (!$sesion_activa && (is_front_page() || is_home())) {
-        wp_safe_redirect(get_site_url() . '/login');
+    if (!$sesion_activa && !in_array($pagina_actual, $paginas_publicas)) {
+        wp_safe_redirect(site_url('/login'));
         exit;
     }
 
-    if (!$sesion_activa && !$pagina_login && !in_array($pagina_actual, $paginas_publicas)) {
-        wp_safe_redirect(get_site_url() . '/login');
-        exit;
-    }
-
-    if ($sesion_activa && $pagina_login) {
+    if ($sesion_activa && $pagina_actual === 'login') {
         wp_safe_redirect(home_url());
         exit;
     }
 }
 
 add_action('template_redirect', 'comprobarSesion');
+
 
 function iniciarSesion() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['usuario'], $_POST['password'])) {

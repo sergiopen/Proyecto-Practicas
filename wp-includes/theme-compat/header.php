@@ -51,10 +51,13 @@ if ( is_singular() ) {
 </head>
 <body <?php body_class(); ?>>
 <div id="page">
-
 <div id="header" role="banner">
-	<div id="headerimg">
-		<h1><a href="<?php echo home_url(); ?>/"><?php bloginfo( 'name' ); ?></a></h1>
-		<div class="description"><?php bloginfo( 'description' ); ?></div>
+	<div id="headerimg" style="display: flex; justify-content: space-between; align-items: center; margin: 1rem;">
+		<a class="header-img" href="<?= home_url() ?>">
+    		<img src="<?= home_url('/wp-content/uploads/2025/05/logo.png') ?>" alt="Ofertas">
+		</a>
+		<form method="POST">
+    		<button type="submit" name="cerrar_sesion" class="btn-cerrar-sesion">Cerrar sesión</button>
+		</form>
 	</div>
 </div>

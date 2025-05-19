@@ -78,15 +78,28 @@ echo '<button type="submit" class="btn-filtrar">Filtrar</button>';
 echo '<button type="reset" class="btn-filtrar" onclick="window.location.href=window.location.pathname;">Limpiar filtros</button>';
 echo '</div>';
 echo '</form>';
-echo '<a class="btn-mostrar" href="' . home_url() . '/nueva-oferta">Añadir oferta</a>';
+
+echo '<a class="btn-mostrar" href="' . home_url() . '/crear-oferta">Añadir oferta</a>';
 
 if ($resultado->num_rows > 0) {
+    echo '<form method="POST" id="form-eliminar-masivo" onsubmit="return confirm(\'¿Estás seguro de que quieres eliminar las ofertas seleccionadas?\');">';
     echo '<table border="1" class="tabla tabla-ofertas">';
-    echo '<thead><tr><th>ID</th><th>Código Empresa</th><th>Título</th><th>Descripción</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Enviar Correo</th><th>Editar</th><th>Eliminar</th></tr></thead>';
+    echo '<thead><tr>';
+    echo '<th><input type="checkbox" id="checkAll"></th>';
+    echo '<th>ID</th><th>Código Empresa</th><th>Título</th><th>Descripción</th><th>ASIR</th><th>DAW</th><th>DAM</th><th>SMR</th><th>VIDEOJUEGOS</th><th>Otros</th><th>Fecha caducidad</th><th>Enviar Correo</th><th>Editar</th><th>Eliminar</th>';
+    echo '</tr></thead>';
     echo '<tbody>';
 
+    $fecha_actual = date('Y-m-d');
+
     while ($row = $resultado->fetch_assoc()) {
-        echo '<tr>';
+        $caducada = false;
+        if (!empty($row['fecha_caducidad']) && $row['fecha_caducidad'] < $fecha_actual) {
+            $caducada = true;
+        }
+
+        echo '<tr' . ($caducada ? ' style="background-color:#f8d7da;"' : '') . '>';
+        echo '<td><input type="checkbox" name="ids_ofertas[]" value="' . esc_html($row['id']) . '"></td>';
         echo '<td>' . esc_html($row['id']) . '</td>';
         echo '<td>' . esc_html($row['codigo_empresa']) . '</td>';
         echo '<td>' . esc_html($row['titulo']) . '</td>';
@@ -97,17 +110,19 @@ if ($resultado->num_rows > 0) {
         echo '<td>' . ($row['SMR'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . ($row['VIDEOJUEGOS'] ? 'Sí' : 'No') . '</td>';
         echo '<td>' . (!empty($row['OTROS']) ? esc_html($row['OTROS']) : 'No') . '</td>';
+        echo '<td>' . (!empty($row['fecha_caducidad']) ? esc_html($row['fecha_caducidad']) : 'Nunca') . ($caducada ? ' <strong style="color:red;">(Caducada)</strong>' : '') . '</td>';
 
         echo '<td>
-                <form method="POST">
+                <form method="POST" style="margin:0;">
                     <input type="hidden" name="id_oferta_correo" value="' . esc_html($row['id']) . '">
                     <button type="submit" name="enviar_correo" class="btn-enviar-correo" onclick="return confirm(\'¿Estás seguro que quieres enviar un correo a todos los alumnos que cumplen con los cursos?\')">Enviar Correo</button>
                 </form>
               </td>';
 
         echo '<td><a class="editar-btn" href="' . home_url() . '/editar-oferta?id=' . esc_html($row['id']) . '" class="btn-editar">Editar</a></td>';
+
         echo '<td>
-                <form method="POST">
+                <form method="POST" style="margin:0;">
                     <input type="hidden" name="id_oferta" value="' . esc_html($row['id']) . '">
                     <button class="btn-eliminar" type="submit" name="eliminar" onclick="return confirm(\'¿Estás seguro de que quieres eliminar esta oferta?\')">Eliminar</button>
                 </form>
@@ -117,6 +132,8 @@ if ($resultado->num_rows > 0) {
 
     echo '</tbody>';
     echo '</table>';
+    echo '<button type="submit" name="eliminar_masivo" class="btn-filtrar btn-eliminar-masivo">Eliminar seleccionados</button>';
+    echo '</form>';
 } else {
     echo '<h2>No se encontraron ofertas.</h2>';
 }
@@ -125,6 +142,27 @@ echo '</div>';
 
 $stmt->close();
 $conexion->close();
+
+if (isset($_POST['eliminar_masivo']) && !empty($_POST['ids_ofertas']) && is_array($_POST['ids_ofertas'])) {
+    $ids_to_delete = $_POST['ids_ofertas'];
+    $conexion = conexionBD();
+
+    $placeholders = implode(',', array_fill(0, count($ids_to_delete), '?'));
+    $tipos = str_repeat('i', count($ids_to_delete));
+
+    $sql_delete = "DELETE FROM ofertas WHERE id IN ($placeholders)";
+    $stmt_delete = $conexion->prepare($sql_delete);
+    $stmt_delete->bind_param($tipos, ...$ids_to_delete);
+    if ($stmt_delete->execute()) {
+        echo '<p class="exito">Ofertas eliminadas correctamente.</p>';
+        echo '<script>window.location.href=window.location.href;</script>';
+        exit;
+    } else {
+        echo '<p class="error">Error al eliminar las ofertas: ' . $conexion->error . '</p>';
+    }
+    $stmt_delete->close();
+    $conexion->close();
+}
 
 if (isset($_POST['enviar_correo'])) {
     $id_oferta = $_POST['id_oferta_correo'];
@@ -159,12 +197,21 @@ function enviar_correo_a_usuarios($id_oferta) {
     if ($oferta['DAW']) $cursos[] = 'DAW = 1';
     if ($oferta['DAM']) $cursos[] = 'DAM = 1'; 
     if ($oferta['SMR']) $cursos[] = 'SMR = 1'; 
-    if( $oferta['VIDEOJUEGOS']) $cursos[] = 'VIDEOJUEGOS = 1'; 
-    if ($oferta['OTROS']) $cursos[] = 'OTROS != ""';
+    if ($oferta['VIDEOJUEGOS']) $cursos[] = 'VIDEOJUEGOS = 1';
+
+    if ($oferta['OTROS']) {
+        $otros_cursos = explode(',', $oferta['OTROS']);
+        foreach ($otros_cursos as $curso) {
+            $curso_limpio = trim($curso);
+            if (!empty($curso_limpio)) {
+                $curso_limpio = $conexion->real_escape_string($curso_limpio);
+                $cursos[] = "FIND_IN_SET('$curso_limpio', OTROS)";
+            }
+        }
+    }
 
     if (!empty($cursos)) {
         $sql_usuarios = "SELECT email FROM alumnos WHERE " . implode(" OR ", $cursos);
-
         $resultado_usuarios = $conexion->query($sql_usuarios);
 
         if (!$resultado_usuarios) {
@@ -182,7 +229,7 @@ function enviar_correo_a_usuarios($id_oferta) {
             $phpmailer->SMTPSecure = 'tls';
             $phpmailer->Port = 587;
             $phpmailer->setFrom('sergiopenasobrado@gmail.com', 'Sergio');
-            $phpmailer->Subject = 'Oferta relevante para ti';
+            $phpmailer->Subject = 'IES Fuengirola nº1 - Oferta relevante para ti';
             
             $titulo_oferta = $oferta['titulo'];
             $descripcion_oferta = $oferta['descripcion']; 
@@ -211,9 +258,13 @@ function enviar_correo_a_usuarios($id_oferta) {
 
     $conexion->close();
 }
-
-
-
 ?>
+
+<script>
+document.getElementById('checkAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="ids_ofertas[]"]');
+    checkboxes.forEach(chk => chk.checked = this.checked);
+});
+</script>
 </body>
 </html>

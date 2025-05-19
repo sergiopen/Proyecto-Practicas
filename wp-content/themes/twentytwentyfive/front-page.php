@@ -92,11 +92,7 @@
             
             $conexion->close();
         }
-        
-        
-        
-        
-        
+
         function mostrarTablaAlumnos() {
             $conexion = conexionBD();
             
@@ -146,11 +142,6 @@
             $conexion->close();
         }
         
-        
-        
-        
-        
-        
         function mostrarTablaEmpresas() {
             $conexion = conexionBD();
             
@@ -196,10 +187,6 @@
             
             $conexion->close();
         }
-        
-        
-        
-        
         
         function mostrarTablaOfertas() {
             $conexion = conexionBD();
@@ -250,6 +237,8 @@
             
             $conexion->close();
         }
+
+        get_footer();
     ?>
     
 </body>

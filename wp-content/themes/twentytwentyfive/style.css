@@ -163,7 +163,7 @@ td {
 }
 
 .btn-cerrar-sesion {
-  padding: 5px 10px;
+  padding: 10px 20px;
   background-color: #f44336;
   color: white;
   border: none;
@@ -284,6 +284,24 @@ textarea {
   background-color: #45a049;
 }
 
+.form-button-cancel {
+  display: block;
+  text-decoration: none;
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.form-button-cancel:hover {
+  background-color: #d32f2f;
+}
+
 /*
  * Estilos formulario filtro de tablas
 */
@@ -365,6 +383,7 @@ textarea {
   justify-content: center;
   margin-top: 50px;
 }
+
 .menu-item {
   background: #fff;
   border-radius: 12px;
@@ -375,15 +394,18 @@ textarea {
   text-decoration: none;
   transition: transform 0.2s;
 }
+
 .menu-item:hover {
   transform: translateY(-5px);
 }
+
 .menu-item img {
   width: 80px;
   height: 80px;
   object-fit: contain;
   margin-bottom: 10px;
 }
+
 .menu-item span {
   display: block;
   font-size: 18px;

@@ -119,6 +119,8 @@
         <span><b style='color: red;'>*</b> Campo obligatorio</span>
 
         <button class="form-button" type="submit">Editar alumno</button>
+        <?php echo '<a class="form-button-cancel" href="' . home_url() . '/alumnos">Volver</a>'; ?>
+
     </form>
     </div>
 </main>
